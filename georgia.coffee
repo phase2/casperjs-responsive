@@ -1,27 +1,36 @@
-casper = require('casper').create()
+casper = require('casper').create({
+  verbose: true,
+  logLevel: "debug"
+})
 
-casper.start "http://georgia.gov", ->
-  # Resize the viewport.
-  @viewport 1280, 1024
+# Variables for the tests.
+url = "http://georgia.gov"
+breakpoints = [
+  [1280, 1024],
+  [960, 640],
+  [480, 320]
+]
+links = [
+  "/",
+  "/search?query=georgia",
+  #"/agency-list",
+  #"/environment",
+]
 
-casper.then ->
-  # Take a picture.
-  @wait 1
-  @capture 'georgia12801024.jpg'
-  @viewport 1024, 768
-  # Take a picture.
-  @wait 1
-  @capture 'georgia1024768.jpg'
-  @viewport 960, 640
-  # Take a picture.
-  @wait 1
-  @capture 'georgia960640.jpg'
-  @viewport 480, 320
-  # Take a picture.
-  @wait 1
-  @capture 'georgia480320.jpg'
+casper.start()
+
+casper.each links, (self, link) ->
+  fullUrl = url + link
+  # Reset the viewport.
+  @viewport breakpoints[0][0], breakpoints[0][1]
+  @thenOpen fullUrl, ->
+    # Reset the viewport.
+    @viewport breakpoints[0][0], breakpoints[0][1]
+    @test.assertHttpStatus 200, "#{link} was found."
+    @each breakpoints, (self, breakpoint) ->
+      @viewport breakpoint[0], breakpoint[1]
+      @capture fullUrl.replace(/[^a-zA-Z0-9]/gi,'-').replace(/^https?-+/, '') + breakpoint[0] + ".png"
 
 casper.run ->
   # Show the test results.
   @test.renderResults true
-
