@@ -14,17 +14,17 @@ links = [
 
 casper = require('casper').create({
   #verbose: true,
-  #viewportSize: {
-    #width: 1280,
-    #height: 1024
-  #},
   logLevel: "debug",
 })
 
 casper.start()
 
+# Needed so that the first screenshot works, sadly.
 casper.then ->
   @viewport 1280, 1024
+  @open url + links[0]
+  @echo "Opening URL #{url + links[0]}."
+  @wait 2000
 
 openPages = ->
   @each links, (self, link) ->
