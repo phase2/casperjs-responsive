@@ -1,8 +1,3 @@
-casper = require('casper').create({
-  verbose: true,
-  logLevel: "debug"
-})
-
 # Variables for the tests.
 url = "http://georgia.gov"
 breakpoints = [
@@ -13,24 +8,45 @@ breakpoints = [
 links = [
   "/",
   "/search?query=georgia",
-  #"/agency-list",
-  #"/environment",
+  "/agency-list",
+  "/environment",
 ]
+
+casper = require('casper').create({
+  #verbose: true,
+  #viewportSize: {
+    #width: 1280,
+    #height: 1024
+  #},
+  logLevel: "debug",
+})
 
 casper.start()
 
-casper.each links, (self, link) ->
-  fullUrl = url + link
-  # Reset the viewport.
-  @viewport breakpoints[0][0], breakpoints[0][1]
-  @thenOpen fullUrl, ->
-    # Reset the viewport.
-    @viewport breakpoints[0][0], breakpoints[0][1]
-    @test.assertHttpStatus 200, "#{link} was found."
-    @each breakpoints, (self, breakpoint) ->
-      @viewport breakpoint[0], breakpoint[1]
-      @capture fullUrl.replace(/[^a-zA-Z0-9]/gi,'-').replace(/^https?-+/, '') + breakpoint[0] + ".png"
+casper.then ->
+  @viewport 1280, 1024
 
-casper.run ->
-  # Show the test results.
-  @test.renderResults true
+openPages = ->
+  @each links, (self, link) ->
+    fullUrl = url + link
+    # Open a URL.
+    @thenOpen fullUrl, ->
+      @test.assertHttpStatus 200, "URL #{fullUrl} was found."
+      # Capture an image.
+      @capture fullUrl.replace(/[^a-zA-Z0-9]/gi,'-').replace(/^https?-+/, '') + breakpoints[currentBreakpoint - 1][0] + ".png"
+
+currentBreakpoint = 0
+
+check = ->
+  if breakpoints[currentBreakpoint]
+    @viewport breakpoints[currentBreakpoint][0], breakpoints[currentBreakpoint][1]
+    openPages.call @
+    currentBreakpoint++
+    @run check
+  else
+    @echo "All done."
+    @test.renderResults true
+    @exit
+
+casper.run check
+
