@@ -17,6 +17,8 @@ casper = require('casper').create({
   logLevel: "debug",
 })
 
+casper.test.comment 'georgia.gov - Screenshots to test responsive breakpoints'
+
 casper.start()
 
 # Needed so that the first screenshot works, sadly.
