@@ -17,13 +17,13 @@ casper = require('casper').create({
   logLevel: "debug",
 })
 
-casper.test.comment 'georgia.gov - Screenshots to test responsive breakpoints'
+casper.test.comment "#{url} - Screenshots to test responsive breakpoints"
 
 casper.start()
 
 # Needed so that the first screenshot works, sadly.
 casper.then ->
-  @viewport 1280, 1024
+  @viewport breakpoints[0][0], breakpoints[0][1]
   @open url + links[0]
   @echo "Opening URL #{url + links[0]}."
   @wait 2000
